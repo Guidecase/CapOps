@@ -1,0 +1,36 @@
+# should roughly equal number of available cores (i.e. 1-2 for small EC2 instance)
+worker_processes  2;
+
+# call gettimeofday() less frequently to free some CPU cycles
+timer_resolution 75ms;
+
+error_log  <%= nginx_log_path %>/error.log;
+pid        <%= nginx_pid_path %>/nginx.pid;
+
+events {
+  worker_connections  1024;
+  multi_accept on;
+  use epoll;
+}
+
+http {
+  include <%= nginx_remote_passenger_config %>;
+
+  include       mime.types;
+  default_type  application/octet-stream;
+    
+  keepalive_timeout  65;
+  tcp_nopush         on;
+  tcp_nodelay        off;    
+
+  include       <%= nginx_remote_gzip_config %>;
+
+  client_max_body_size <%= nginx_max_body_size || '1m' %>;
+  error_page 413 =403 /error_413; # recast and redirect 413 request size errors (many browser can't handle 413)
+    
+  log_format main '$remote_addr - $remote_user [$time_local] '
+                  '"$request" $status $body_bytes_sent "$http_referer" '
+                  '"$http_user_agent" "$http_x_forwarded_for"' ;
+    
+  include <%= nginx_path_prefix %>/conf/sites-enabled/*;
+}

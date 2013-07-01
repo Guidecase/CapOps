@@ -1,0 +1,11 @@
+description "delayed job workers daemon"
+
+start on runlevel [2345]
+stop on runlevel [06]
+
+respawn
+respawn limit 10 90
+
+script
+exec sudo RAILS_ENV=<%= environment %> <%= current_path %>/script/delayed_job run
+end script

@@ -1,0 +1,73 @@
+<% (nginx_redirects || {}).each do |k, v| %>
+server {
+  listen 80;
+  server_name <%= k %>;
+  rewrite ^ http://<%= v %>$request_uri;
+}
+<% end %>
+
+server {
+  listen   *:80 default_server;
+  listen   [::]:80 ipv6only=on;        
+
+  server_name _;
+  access_log  <%= nginx_log_path %>/access.log;
+  error_log  <%= nginx_log_path %>/error.log;
+
+  root <%= nginx_public_root_path %>;
+  passenger_enabled on;
+
+  proxy_set_header X-Forwarded-Proto https;
+
+  location ~ ^/(assets)/  {
+    gzip_static on;
+    expires max;
+    add_header Cache-Control public;
+  }
+
+  location = /favicon.ico {
+    expires    max;
+    add_header Cache-Control public;
+  }
+
+  # root path  
+  location = / {
+    passenger_enabled on;
+    if (-f $document_root/cache/index.html) {
+      rewrite (.*) /cache/index.html break;
+    }
+  }
+
+  # cached paths
+  if ($request_method != GET) { break; }
+  if (-f $document_root/cache/$uri.html) {
+    rewrite (.*) /cache/$1.html break;  
+  }    
+
+  <% if nginx_health_check %>
+  # useful for AWS ELB pings, some spiders, etc.
+  location = /index.html {
+    return 200;
+  }
+  <% end %>  
+
+
+  <%= nginx_rewrites %>
+}
+
+<% if nginx_ssl == true %>
+<% if nginx_tld.to_s.split('.').size == 2 %>
+server {
+  listen 443 ssl;
+  server_name <%= nginx_tld %>;
+  rewrite ^ https://www.<%= nginx_tld %>$request_uri;
+}
+<% end %>
+
+server {
+  listen       443 ssl;
+  ssl          on;
+  
+  include      <%= nginx_remote_ssl_config %>;
+}
+<% end %>
