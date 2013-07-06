@@ -25,5 +25,16 @@ Capistrano::Configuration.instance(:must_exist).load do
     task :cleanup, :roles => :app, :except => { :no_release => true } do
       run "sudo rm #{upstart_nginx_remote_config} && sudo rm #{upstart_dj_remote_config}"
     end
+
+    task :status, :roles => :app, :except => { :no_release => true } do
+      run "status nginx"
+      run "status delayed_job"
+    end
+
+    desc "Checks the status of nginx and delayed job conf files."
+    task :check, :roles => :app, :except => { :no_release => true } do
+      run "initctl check-config nginx --warn"
+      run "initctl check-config delayed_job --warn"
+    end
   end
 end

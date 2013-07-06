@@ -39,5 +39,24 @@ Capistrano::Configuration.instance(:must_exist).load do
     task :restart, :roles => :app, :except => { :no_release => true } do
       run "sudo restart nginx"
     end
+
+    task :setup, :roles => :app , :except => { :no_release => true } do
+      run "sudo mkdir -p #{nginx_sites_enabled}"
+      run "sudo mkdir -p #{nginx_sites_available}"
+      run "sudo rm -f #{nginx_remote_site_available_config}"
+      run "sudo rm -f #{nginx_remote_site_config}"
+      
+      generate_file nginx_local_config, nginx_remote_config
+      generate_file nginx_local_gzip_config, nginx_remote_gzip_config
+      generate_file nginx_local_ssl_config, nginx_remote_ssl_config if nginx_ssl == true
+      generate_file nginx_local_passenger_config, nginx_remote_passenger_config
+      generate_file nginx_local_site_config, nginx_remote_site_available_config
+      
+      run "sudo ln -sf #{nginx_remote_site_available_config} #{nginx_remote_site_config}"
+      
+      run "sudo chown #{user}:root #{nginx_log_path}"
+      run "sudo mkdir -p #{nginx_pid_path}"
+      run "sudo chown #{user}:root #{nginx_pid_path}"
+    end
   end
 end

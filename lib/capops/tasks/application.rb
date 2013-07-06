@@ -5,7 +5,7 @@ Capistrano::Configuration.instance(:must_exist).load do
   cset :admin_runner, 'ubuntu'
   cset :use_sudo, false
   cset :web_server, :nginx
-  cset :database, :mongo
+  cset :database, :mongoid
 
   # SCM settings
   set :scm, :git

@@ -1,6 +1,7 @@
 Capistrano::Configuration.instance(:must_exist).load do 
   set :stages, %w(production staging)
   set :default_stage, "staging"
+  set :shared_folders, %w(log config)
   
   namespace :deploy do
     task :start do ; end
@@ -35,15 +36,28 @@ Capistrano::Configuration.instance(:must_exist).load do
       run "sudo apt-get -y install ruby1.9.3"
 
       passenger.setup
-      bundler.setup
+      bundle.setup
       rails.setup
+      log.setup
+      deploy.setup_app_directory
+      deploy.setup_shared_folders
+      db.setup
+      ec2.setup
+      deploy.cold
+      upstart.setup
     end
     
     task :setup_app_directory, :roles => :app do
       run "if [ ! -d '#{deploy_to}' ]; then sudo mkdir #{deploy_to}; fi"
       run "sudo chown #{user}:root #{deploy_to}"
     end
-  end
 
-  before "deploy:setup", "deploy:setup_app_directory"
+    task :setup_shared_folders, :roles => :app, :except => { :no_release => true } do
+      commands = shared_folders.map do |folder| 
+        path = "#{shared_path}/#{folder}"
+        "if [ ! -d '#{path}' ]; then mkdir -p #{path}; fi"
+      end
+      run commands.join(" && ")
+    end    
+  end
 end

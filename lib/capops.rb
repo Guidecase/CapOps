@@ -11,6 +11,8 @@ if Capistrano::Configuration.instance
   require 'bundler/capistrano' if defined? Bundler
   require "whenever/capistrano/recipes" if defined? Whenever
 
+  load "deploy/assets" if respond_to?(:namespace) 
+
   recipes = Dir.glob(File.join(File.dirname(__FILE__), '/capops/tasks/**/*.rb'))
   recipes.sort.each do |f| 
     load f

@@ -7,8 +7,8 @@ Capistrano::Configuration.instance(:must_exist).load do
       end    
 
       key_config = <<-KEY
-  #{environment}:
-    user_key: #{encryption_key}
+#{environment}:
+  user_key: #{encryption_key}
       KEY
 
       run "sudo mkdir -p #{shared_path}/config"

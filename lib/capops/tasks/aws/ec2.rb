@@ -16,6 +16,8 @@ Capistrano::Configuration.instance(:must_exist).load do
     
     task :symlink, :except => { :no_release => true } do
       run "if [ -d #{current_path} ]; then ln -nfs #{aws_remote_config} #{aws_release_config}; fi"
-    end   
+    end
   end
+
+  after "deploy:create_symlink", "ec2:symlink"
 end

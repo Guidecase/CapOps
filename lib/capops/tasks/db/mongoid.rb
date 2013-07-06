@@ -63,4 +63,6 @@ Capistrano::Configuration.instance(:must_exist).load do
   namespace :deploy do
     task :migrate do; end;
   end
+
+  after "deploy:create_symlink", "db:symlink"
 end
