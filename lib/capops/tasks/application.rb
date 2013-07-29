@@ -11,7 +11,7 @@ Capistrano::Configuration.instance(:must_exist).load do
   set :scm, :git
   set :branch, 'master'
   set :scm_verbose, true
-  set :git_enable_submodules, 1
+  set :git_enable_submodules, 0
   set :keep_releases, 2
   set :deploy_via, :remote_cache
   set :deploy_to, "/opt/#{application}"

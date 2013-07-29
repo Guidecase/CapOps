@@ -28,9 +28,20 @@ Capistrano::Configuration.instance(:must_exist).load do
     task :log, :roles => :app do
       run "tail -300 #{current_path}/log/delayed_job.log"
     end     
+
+    task :setup, :roles => :app do
+      run "touch #{shared_path}/log/delayed_job.log"
+    end
+
+    task :symlink, :roles => :app, :except => { :no_release => true } do
+      run "ln -nfs #{shared_path}/log/delayed_job.log #{latest_release}/log/delayed_job.log"
+    end    
   end
 
-  # after "deploy:stop",    "delayed_job:stop"
-  after "deploy:start",   "delayed_job:start"
-  after "deploy:restart", "delayed_job:stop", "delayed_job:start"
+  after  "deploy:stop",    "delayed_job:stop"
+  after  "deploy:start",   "delayed_job:start"
+  before "deploy:restart", "delayed_job:stop"
+  after  "deploy:restart", "delayed_job:start"
+  after  "delayed_job:setup", "delayed_job:symlink"
+  after  "deploy:finalize_update", "delayed_job:symlink"  
 end
