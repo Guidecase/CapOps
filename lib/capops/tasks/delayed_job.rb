@@ -5,17 +5,17 @@ Capistrano::Configuration.instance(:must_exist).load do
 
   namespace :delayed_job do
     desc "Start the delayed_job process"
-    task :start, :roles => :app do
+    task :start, :roles => :app, :on_error => :continue do
       run "sudo start delayed_job"
     end
 
     desc "Stop the delayed_job process"
-    task :stop, :roles => :app do 
+    task :stop, :roles => :app, :on_error => :continue do
       run "sudo stop delayed_job"
     end    
 
     desc "Restart the delayed_job process"
-    task :restart, :roles => :app do 
+    task :restart, :roles => :app, :on_error => :continue do
       run "sudo restart delayed_job"
     end    
 
@@ -26,15 +26,15 @@ Capistrano::Configuration.instance(:must_exist).load do
 
     desc "Show most recent delayed_job log file"
     task :log, :roles => :app do
-      run "tail -300 #{current_path}/log/delayed_job.log"
+      run "tail -300 #{current_path}/log/dj.log"
     end     
 
     task :setup, :roles => :app do
-      run "touch #{shared_path}/log/delayed_job.log"
+      run "touch #{shared_path}/log/dj.log"
     end
 
     task :symlink, :roles => :app, :except => { :no_release => true } do
-      run "ln -nfs #{shared_path}/log/delayed_job.log #{latest_release}/log/delayed_job.log"
+      run "ln -nfs #{shared_path}/log/dj.log #{latest_release}/log/dj.log"
     end    
   end
 

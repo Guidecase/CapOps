@@ -11,6 +11,7 @@ Capistrano::Configuration.instance(:must_exist).load do
 
     task :pack, :roles => :app, :except => { :no_release => true } do
       run_locally "if [ -d 'vendor/cache' ]; then rm -r vendor/cache; fi"
+      system "bundle update && bundle install"
       system "bundle package --all"
     end    
   end

@@ -7,5 +7,9 @@ respawn
 respawn limit 10 90
 
 script
-exec sudo RAILS_ENV=<%= environment %> <%= current_path %>/script/delayed_job run
+  PATH=$PATH:/opt/earlydoc/current/vendor/cache
+  RAILS_ENV=<% enviornment %>
+
+  cd <%= current_path %>
+  RAILS_ENV=<%= environment %> sudo bundle exec /opt/earlydoc/current/script/delayed_job run >> /opt/earlydoc/current/log/dj.log 2>&1
 end script
